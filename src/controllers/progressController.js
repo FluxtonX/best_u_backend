@@ -1,0 +1,112 @@
+const WeightLog = require('../models/WeightLog');
+const PersonalBest = require('../models/PersonalBest');
+const UserProgress = require('../models/UserProgress');
+const User = require('../models/User');
+
+// @desc    Get progress summary
+// @route   GET /api/v1/progress/summary
+// @access  Private
+const getProgressSummary = async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    const progress = await UserProgress.findOne({ userId: user._id });
+    const pbsCount = await PersonalBest.countDocuments({ userId: user._id });
+
+    const totalWorkouts = progress ? progress.completedWorkouts.length : 0;
+    const weightLost = user.currentWeight && user.targetWeight 
+      ? Math.abs(user.currentWeight - user.targetWeight) 
+      : 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalWorkouts,
+        weightLost,
+        personalBestsCount: pbsCount,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Log weight
+// @route   POST /api/v1/progress/weight
+// @access  Private
+const logWeight = async (req, res) => {
+  try {
+    const { weight, date } = req.body;
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+
+    const newLog = await WeightLog.create({
+      userId: user._id,
+      weight,
+      date: date || Date.now(),
+    });
+
+    // Update current weight in profile
+    user.currentWeight = weight;
+    await user.save();
+
+    res.status(201).json({ success: true, data: newLog });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get weight history
+// @route   GET /api/v1/progress/weight-history
+// @access  Private
+const getWeightHistory = async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    const history = await WeightLog.find({ userId: user._id }).sort({ date: 1 });
+    
+    res.status(200).json({ success: true, data: history });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get personal bests
+// @route   GET /api/v1/progress/personal-bests
+// @access  Private
+const getPersonalBests = async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+    const pbs = await PersonalBest.find({ userId: user._id }).sort({ achievedAt: -1 });
+    
+    res.status(200).json({ success: true, data: pbs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get strength levels (max weights for key exercises)
+// @route   GET /api/v1/progress/strength-levels
+// @access  Private
+const getStrengthLevels = async (req, res) => {
+  try {
+    // Mock data for the bar chart
+    res.status(200).json({
+      success: true,
+      data: [
+        { exercise: 'Bench', maxWeight: 40 },
+        { exercise: 'Squat', maxWeight: 60 },
+        { exercise: 'Deadlift', maxWeight: 30 },
+        { exercise: 'Press', maxWeight: 55 },
+        { exercise: 'Rows', maxWeight: 45 },
+      ]
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  getProgressSummary,
+  logWeight,
+  getWeightHistory,
+  getPersonalBests,
+  getStrengthLevels,
+};
