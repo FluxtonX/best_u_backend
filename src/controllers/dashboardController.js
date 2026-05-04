@@ -13,37 +13,53 @@ const getDashboardSummary = async (req, res) => {
     // Fetch user progress
     const progress = await UserProgress.findOne({ userId: user._id }).populate('activeProgramId');
     
-    let weekProgress = "0/0";
+    let weekProgress = "0/0 days";
     let streak = progress ? progress.currentStreak : 0;
+    let weightLost = 0;
     let todaysWorkout = null;
 
-    if (progress && progress.activeProgramId) {
-      // In a real app, calculate current week based on start date or completed workouts
-      const currentWeek = 1;
-      const totalWeeks = progress.activeProgramId.totalWeeks;
-      weekProgress = `${currentWeek}/${totalWeeks}`;
-
-      // Mock finding today's workout
-      todaysWorkout = await Workout.findOne({ 
-        programId: progress.activeProgramId._id, 
-        weekNumber: currentWeek,
-        dayNumber: 1 // Defaulting to day 1 for now
+    if (progress) {
+      // 1. Calculate Week Progress (e.g., "3/3 days")
+      const currentWeekWorkouts = progress.completedWorkouts.filter(w => {
+        // Logic to filter workouts from the current week
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        return w.date >= oneWeekAgo;
       });
+      weekProgress = `${currentWeekWorkouts.length}/3 days`;
+
+      // 2. Calculate Weight Lost
+      if (user.currentWeight && user.targetWeight) {
+        weightLost = Math.abs(user.currentWeight - (user.onboardingWeight || user.currentWeight));
+      }
+
+      // 3. Get Today's Workout
+      if (progress.activeProgramId) {
+        todaysWorkout = await Workout.findOne({ 
+          programId: progress.activeProgramId._id,
+          // You could add logic here to find the next uncompleted workout
+        }).select('title estimatedDurationMinutes exercises');
+      }
     }
 
     res.status(200).json({
       success: true,
       data: {
-        weekProgress,
-        streak,
-        weightProgress: user.currentWeight && user.targetWeight 
-          ? `${(user.targetWeight - user.currentWeight).toFixed(1)} kg to go` 
-          : "N/A",
+        weekInfo: {
+          current: "Week 2/8", // Mock logic, could be dynamic
+          remaining: "6 weeks remaining"
+        },
+        stats: {
+          weekProgress,
+          streak: `${streak} weeks`,
+          weightProgress: `-${weightLost.toFixed(1)} kg`
+        },
         todaysWorkout: todaysWorkout ? {
           id: todaysWorkout._id,
           title: todaysWorkout.title,
-          duration: todaysWorkout.estimatedDurationMinutes,
-          exercisesCount: todaysWorkout.exercises.length,
+          day: "DAY 2",
+          duration: `${todaysWorkout.estimatedDurationMinutes} min`,
+          exercisesCount: `${todaysWorkout.exercises.length} exercises`,
         } : null,
       }
     });
@@ -57,12 +73,11 @@ const getDashboardSummary = async (req, res) => {
 // @access  Private
 const getDailyQuote = async (req, res) => {
   try {
+    // Returning format that matches Flutter's JSON expectations
     res.status(200).json({
       success: true,
-      data: {
-        quote: "The only bad workout is the one that didn't happen.",
-        author: "Unknown"
-      }
+      quote: "The only bad workout is the one that didn't happen.",
+      author: "Unknown"
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

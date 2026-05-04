@@ -60,9 +60,15 @@ const logWeight = async (req, res) => {
 const getWeightHistory = async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
-    const history = await WeightLog.find({ userId: user._id }).sort({ date: 1 });
+    const logs = await WeightLog.find({ userId: user._id }).sort({ date: 1 });
     
-    res.status(200).json({ success: true, data: history });
+    // Format for Flutter LineChart
+    const data = logs.map(log => ({
+      date: log.date.toISOString().split('T')[0],
+      weight: log.weight
+    }));
+
+    res.status(200).json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -87,15 +93,15 @@ const getPersonalBests = async (req, res) => {
 // @access  Private
 const getStrengthLevels = async (req, res) => {
   try {
-    // Mock data for the bar chart
+    // Mock data for the bar chart as seen in progress_screen.dart
     res.status(200).json({
       success: true,
       data: [
-        { exercise: 'Bench', maxWeight: 40 },
-        { exercise: 'Squat', maxWeight: 60 },
-        { exercise: 'Deadlift', maxWeight: 30 },
-        { exercise: 'Press', maxWeight: 55 },
-        { exercise: 'Rows', maxWeight: 45 },
+        { exercise: 'Bench', maxWeight: 60 },
+        { exercise: 'Row', maxWeight: 50 },
+        { exercise: 'Press', maxWeight: 40 },
+        { exercise: 'Squat', maxWeight: 80 },
+        { exercise: 'Deadlift', maxWeight: 100 },
       ]
     });
   } catch (error) {

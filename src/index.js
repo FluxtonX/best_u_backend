@@ -10,6 +10,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const workoutRoutes = require('./routes/workoutRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -32,6 +33,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1', workoutRoutes); // Note: workoutRoutes handles /programs/active and /workouts
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/workouts', sessionRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

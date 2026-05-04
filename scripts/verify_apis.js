@@ -19,7 +19,7 @@ const headers = {
 
 const endpoints = [
   // 1. User & Profile APIs
-  { method: 'POST', path: '/users/onboarding', body: { name: "Test User", currentWeight: 80, targetWeight: 75, fitnessLevel: "Beginner", goals: ["Lose weight"] } },
+  { method: 'POST', path: '/users/onboarding', body: { name: "Test User", age: 25, height: 180, currentWeight: 80, targetWeight: 75, fitnessLevel: "Beginner", goals: ["Lose weight"] } },
   { method: 'GET', path: '/users/profile' },
   { method: 'PUT', path: '/users/profile', body: { targetWeight: 74 } },
   
@@ -31,6 +31,8 @@ const endpoints = [
   { method: 'GET', path: '/programs/active' },
   { method: 'GET', path: '/workouts/507f191e810c19729de860ea' }, // Replaced MOCK_ID with valid ObjectId
   { method: 'POST', path: '/workouts/507f191e810c19729de860ea/complete', body: { timeTakenMinutes: 45, volumeLifted: 2000 } },
+  { method: 'POST', path: '/workouts/session/log-set', body: { exerciseName: "Bench Press", weight: 65, reps: 10, setNumber: 1, workoutSessionId: "507f191e810c19729de860eb" } },
+  { method: 'GET', path: '/workouts/exercise/history/Bench Press' },
 
   // 4. Progress & Tracking
   { method: 'GET', path: '/progress/summary' },

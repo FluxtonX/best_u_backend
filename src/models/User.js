@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
+    age: {
+      type: Number,
+    },
+    height: {
+      type: Number,
+    },
     // Onboarding data
     currentWeight: {
       type: Number,
