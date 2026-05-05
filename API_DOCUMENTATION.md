@@ -32,11 +32,14 @@ All routes except `/subscriptions/webhook` require a Firebase ID Token in the Au
 | `/programs/active` | `GET` | Get user's active program. | - |
 | `/workouts/:id` | `GET` | Get workout details. | - |
 | `/workouts/:id/complete` | `POST` | Log workout completion. | `{ "timeTakenMinutes": 45, "volumeLifted": 1200 }` |
+| `/session/log-set` | `POST` | Log individual exercise set. | `{ "workoutId": "...", "exercise": "Bench Press", "weight": 60, "reps": 10 }` |
+| `/exercise/history/:exerciseName` | `GET` | Get history for an exercise. | - |
 | `/progress/summary` | `GET` | Get total workouts, weight lost, etc. | - |
 | `/progress/weight` | `POST` | Log body weight. | `{ "weight": 75.5, "date": "2023-10-01" }` |
 | `/progress/sync-health` | `POST` | Sync Google/Apple Health. | `{ "source": "Google Fit", "steps": 10000, "date": "2023-10-01" }` |
 | `/progress/weight-history` | `GET` | Get weight chart data. | - |
 | `/progress/personal-bests` | `GET` | Get PRs for exercises. | - |
+| `/progress/strength-levels` | `GET` | Get strength levels (max weights). | - |
 
 ### **D. Subscriptions & Payments**
 | Endpoint | Method | Description | Request Body / Params |
@@ -67,5 +70,6 @@ All routes except `/subscriptions/webhook` require a Firebase ID Token in the Au
 - **Workout**: Daily workout routines and exercises.
 - **ExerciseLog**: Individual set performance history.
 - **WeightLog**: Historical weight tracking.
+- **HealthLog**: Synced health data (Google Fit/Apple Health).
 - **Subscription**: Detailed payment transaction records.
 - **UserProgress**: Streak and active program tracking.
