@@ -29,8 +29,8 @@ const getDashboardSummary = async (req, res) => {
       weekProgress = `${currentWeekWorkouts.length}/3 days`;
 
       // 2. Calculate Weight Lost
-      if (user.currentWeight && user.targetWeight) {
-        weightLost = Math.abs(user.currentWeight - (user.onboardingWeight || user.currentWeight));
+      if (user.weight && user.targetWeight) {
+        weightLost = Math.abs(user.weight - (user.onboardingWeight || user.weight));
       }
 
       // 3. Get Today's Workout
@@ -42,6 +42,9 @@ const getDashboardSummary = async (req, res) => {
       }
     }
 
+    // 4. Get Latest Health Stats (Google Fit / Apple Health)
+    const latestHealth = await HealthLog.findOne({ userId: user._id }).sort({ date: -1 });
+
     res.status(200).json({
       success: true,
       data: {
@@ -52,7 +55,8 @@ const getDashboardSummary = async (req, res) => {
         stats: {
           weekProgress,
           streak: `${streak} weeks`,
-          weightProgress: `-${weightLost.toFixed(1)} kg`
+          weightProgress: `-${weightLost.toFixed(1)} kg`,
+          steps: latestHealth ? latestHealth.steps : 0
         },
         todaysWorkout: todaysWorkout ? {
           id: todaysWorkout._id,

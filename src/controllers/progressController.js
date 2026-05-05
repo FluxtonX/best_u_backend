@@ -1,3 +1,4 @@
+const HealthLog = require('../models/HealthLog');
 const WeightLog = require('../models/WeightLog');
 const PersonalBest = require('../models/PersonalBest');
 const UserProgress = require('../models/UserProgress');
@@ -13,8 +14,8 @@ const getProgressSummary = async (req, res) => {
     const pbsCount = await PersonalBest.countDocuments({ userId: user._id });
 
     const totalWorkouts = progress ? progress.completedWorkouts.length : 0;
-    const weightLost = user.currentWeight && user.targetWeight 
-      ? Math.abs(user.currentWeight - user.targetWeight) 
+    const weightLost = user.weight && user.targetWeight 
+      ? Math.abs(user.weight - user.onboardingWeight) 
       : 0;
 
     res.status(200).json({
@@ -44,11 +45,38 @@ const logWeight = async (req, res) => {
       date: date || Date.now(),
     });
 
-    // Update current weight in profile
-    user.currentWeight = weight;
+    // Update weight in profile
+    user.weight = weight;
     await user.save();
 
     res.status(201).json({ success: true, data: newLog });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Sync Health Data (Google Fit / Apple Health)
+// @route   POST /api/v1/progress/sync-health
+// @access  Private
+const syncHealthData = async (req, res) => {
+  try {
+    const { source, steps, caloriesBurned, activeMinutes, distanceKm, date } = req.body;
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+
+    // Use findOneAndUpdate with upsert to prevent duplicates for the same day
+    const log = await HealthLog.findOneAndUpdate(
+      { userId: user._id, date: new Date(date).setHours(0,0,0,0), source },
+      { 
+        steps, 
+        caloriesBurned, 
+        activeMinutes, 
+        distanceKm,
+        date: new Date(date).setHours(0,0,0,0)
+      },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({ success: true, data: log });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -115,4 +143,5 @@ module.exports = {
   getWeightHistory,
   getPersonalBests,
   getStrengthLevels,
+  syncHealthData,
 };

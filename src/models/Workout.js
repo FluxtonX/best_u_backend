@@ -40,4 +40,8 @@ const workoutSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indices for performance
+workoutSchema.index({ programId: 1 });
+workoutSchema.index({ programId: 1, weekNumber: 1, dayNumber: 1 });
+
 module.exports = mongoose.model('Workout', workoutSchema);

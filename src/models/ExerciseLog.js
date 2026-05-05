@@ -35,4 +35,8 @@ const exerciseLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indices for performance
+exerciseLogSchema.index({ userId: 1 });
+exerciseLogSchema.index({ workoutSessionId: 1 });
+
 module.exports = mongoose.model('ExerciseLog', exerciseLogSchema);

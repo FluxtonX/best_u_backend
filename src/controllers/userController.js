@@ -5,7 +5,7 @@ const User = require('../models/User');
 // @access  Private
 const onboardUser = async (req, res) => {
   try {
-    const { currentWeight, targetWeight, fitnessLevel, goals, name } = req.body;
+    const { weight, targetWeight, experienceLevel, goal, name, age, height } = req.body;
     const { uid, email } = req.user; // From Firebase Auth Middleware
 
     // Check if user already exists
@@ -19,10 +19,13 @@ const onboardUser = async (req, res) => {
       firebaseUid: uid,
       email,
       name,
-      currentWeight,
+      age,
+      height,
+      weight,
+      onboardingWeight: weight, // Save initial weight
       targetWeight,
-      fitnessLevel,
-      goals,
+      fitnessLevel: experienceLevel, // Map experienceLevel to fitnessLevel
+      goal,
     });
 
     res.status(201).json({ success: true, data: user });
@@ -53,7 +56,7 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
   try {
-    const { name, avatar, currentWeight, targetWeight, goals } = req.body;
+    const { name, avatar, weight, targetWeight, goal } = req.body;
 
     let user = await User.findOne({ firebaseUid: req.user.uid });
 
@@ -63,9 +66,9 @@ const updateUserProfile = async (req, res) => {
 
     user.name = name || user.name;
     user.avatar = avatar || user.avatar;
-    user.currentWeight = currentWeight || user.currentWeight;
+    user.weight = weight || user.weight;
     user.targetWeight = targetWeight || user.targetWeight;
-    user.goals = goals || user.goals;
+    user.goal = goal || user.goal;
 
     const updatedUser = await user.save();
 

@@ -1,16 +1,26 @@
 const express = require('express');
-const { getActiveProgram, getWorkoutById, completeWorkout } = require('../controllers/workoutController');
+const { check } = require('express-validator');
+const { getActiveProgram, getWorkoutById, completeWorkout, getAllPrograms } = require('../controllers/workoutController');
 const verifyFirebaseToken = require('../middlewares/authMiddleware');
+const validate = require('../utils/validation');
 
 const router = express.Router();
 
 router.use(verifyFirebaseToken);
 
-// Note: In index.js we might mount this at /api/v1/programs or /api/v1/workouts.
-// We will split them or handle routing there.
-// For simplicity, we can mount this at /api/v1
+// Programs
+router.get('/programs', getAllPrograms);
 router.get('/programs/active', getActiveProgram);
+
+// Workouts
 router.get('/workouts/:id', getWorkoutById);
-router.post('/workouts/:id/complete', completeWorkout);
+router.post(
+  '/workouts/:id/complete',
+  [
+    check('timeTakenMinutes', 'Time taken is required').isNumeric(),
+    validate,
+  ],
+  completeWorkout
+);
 
 module.exports = router;

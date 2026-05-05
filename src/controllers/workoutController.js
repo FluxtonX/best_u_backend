@@ -2,6 +2,26 @@ const Program = require('../models/Program');
 const Workout = require('../models/Workout');
 const UserProgress = require('../models/UserProgress');
 const User = require('../models/User');
+const paginate = require('../utils/pagination');
+
+// @desc    Get all programs
+// @route   GET /api/v1/programs
+// @access  Private
+const getAllPrograms = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const results = await paginate(Program, { isActive: true }, page, limit);
+    
+    res.status(200).json({
+      success: true,
+      ...results
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Get active program
 // @route   GET /api/v1/programs/active
@@ -78,6 +98,7 @@ const completeWorkout = async (req, res) => {
 };
 
 module.exports = {
+  getAllPrograms,
   getActiveProgram,
   getWorkoutById,
   completeWorkout,

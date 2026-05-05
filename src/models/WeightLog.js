@@ -20,4 +20,8 @@ const weightLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indices for performance
+weightLogSchema.index({ userId: 1 });
+weightLogSchema.index({ date: -1 });
+
 module.exports = mongoose.model('WeightLog', weightLogSchema);

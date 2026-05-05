@@ -24,4 +24,7 @@ const programSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indices for performance
+programSchema.index({ isActive: 1 });
+
 module.exports = mongoose.model('Program', programSchema);

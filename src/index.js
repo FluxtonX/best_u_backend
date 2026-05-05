@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 const connectDB = require('./config/db');
 
 // Route files
@@ -22,6 +25,22 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Sanitize data (NoSQL Injection protection)
+app.use(mongoSanitize());
+
+// Rate limiting (100 requests per 15 minutes)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
+app.use('/api', limiter);
+
+// Dev logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Best-U API', status: 'Online' });
@@ -30,10 +49,14 @@ app.get('/', (req, res) => {
 // Mount routes
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
-app.use('/api/v1', workoutRoutes); // Note: workoutRoutes handles /programs/active and /workouts
+app.use('/api/v1', workoutRoutes);
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/workouts', sessionRoutes);
+
+// Error Middleware
+const errorMiddleware = require('./middlewares/errorMiddleware');
+app.use(errorMiddleware);
 
 // Start server
 const PORT = process.env.PORT || 5000;

@@ -26,7 +26,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
     },
     // Onboarding data
-    currentWeight: {
+    weight: {
+      type: Number,
+    },
+    onboardingWeight: {
       type: Number,
     },
     targetWeight: {
@@ -36,13 +39,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['Beginner', 'Intermediate', 'Advanced'],
     },
-    goals: {
-      type: [String],
+    goal: {
+      type: String,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['none', 'active', 'canceled', 'past_due'],
+      default: 'none',
+    },
+    subscriptionId: {
+      type: String,
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Add indices for performance
+// Note: firebaseUid and email are already unique/indexed in the schema definition
 
 module.exports = mongoose.model('User', userSchema);
