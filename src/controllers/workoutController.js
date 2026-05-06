@@ -58,10 +58,30 @@ const getActiveProgram = async (req, res) => {
 // @access  Private
 const getWorkoutById = async (req, res) => {
   try {
-    const workout = await Workout.findById(req.params.id);
+    const workout = await Workout.findById(req.params.id).lean();
     if (!workout) {
       return res.status(404).json({ success: false, message: 'Workout not found' });
     }
+
+    // Auto-Link logic: Dynamically generate S3 URL if none is saved in DB
+    const s3BaseUrl = process.env.AWS_S3_BUCKET_NAME 
+      ? `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/bestu/videos/`
+      : 'https://best-u-media.s3.us-east-1.amazonaws.com/bestu/videos/';
+
+    workout.exercises = workout.exercises.map(exercise => {
+      if (!exercise.videoUrl) {
+        // Format "Bench Press" -> "bench-press.mp4"
+        const formattedName = exercise.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-') // Replace non-alphanumeric with dash
+          .replace(/-+/g, '-') // Remove duplicate dashes
+          .replace(/^-|-$/g, ''); // Trim leading/trailing dashes
+        
+        exercise.videoUrl = `${s3BaseUrl}${formattedName}.mp4`;
+      }
+      return exercise;
+    });
+
     res.status(200).json({ success: true, data: workout });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

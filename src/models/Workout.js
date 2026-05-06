@@ -6,6 +6,7 @@ const exerciseSchema = new mongoose.Schema({
   reps: { type: String, required: true }, // e.g. "8-12" or "To failure"
   restSeconds: { type: Number, default: 60 },
   videoUrl: String,
+  thumbnailUrl: String,
 });
 
 const workoutSchema = new mongoose.Schema(

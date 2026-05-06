@@ -14,6 +14,7 @@ const workoutRoutes = require('./routes/workoutRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -53,6 +54,7 @@ app.use('/api/v1', workoutRoutes);
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/workouts', sessionRoutes);
+app.use('/api/v1/media', mediaRoutes);
 
 // Error Middleware
 const errorMiddleware = require('./middlewares/errorMiddleware');

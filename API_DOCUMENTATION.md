@@ -49,6 +49,11 @@ All routes except `/subscriptions/webhook` require a Firebase ID Token in the Au
 | `/subscriptions/portal` | `POST` | Manage subscription (Cancel/Update). | - |
 | `/subscriptions/webhook` | `POST` | Stripe Webhook (Public). | Stripe Signature Header |
 
+### **E. Media & Uploads (AWS S3)**
+| Endpoint | Method | Description | Request Body / Params |
+| :--- | :--- | :--- | :--- |
+| `/media/upload-url` | `GET` | Get Pre-signed URL for direct S3 upload. | `?fileName=video.mp4&fileType=video/mp4` |
+
 ---
 
 ## 2. Production Standards Applied
@@ -73,3 +78,44 @@ All routes except `/subscriptions/webhook` require a Firebase ID Token in the Au
 - **HealthLog**: Synced health data (Google Fit/Apple Health).
 - **Subscription**: Detailed payment transaction records.
 - **UserProgress**: Streak and active program tracking.
+
+---
+
+## 4. Flutter Developer Guide: AWS S3 Video Integration
+
+The App Owner will manually upload all training videos to AWS S3 into the `bestu/videos/` folder. The Flutter app **does not need to upload videos**. 
+
+Your only job is to fetch and play the videos.
+
+### Step 1: Getting the Video URL
+When you fetch the Workout Details API (`GET /api/v1/workouts/:id`), the backend will return the exercise list. Each exercise will have a `videoUrl` field which contains the direct AWS S3 link.
+
+Example Response from Backend:
+```json
+{
+  "name": "Bench Press",
+  "sets": 3,
+  "reps": "10",
+  "videoUrl": "https://best-u-media.s3.us-east-1.amazonaws.com/bestu/videos/bench-press.mp4"
+}
+```
+
+### Step 2: Playing the Video
+In `exercise_session_screen.dart`, replace the placeholder with the `VideoPlayer`. Ensure you use `.networkUrl` to stream the video directly from the AWS URL provided in the API.
+
+```dart
+late VideoPlayerController _controller;
+
+@override
+void initState() {
+  super.initState();
+  // Use the videoUrl received from the backend
+  _controller = VideoPlayerController.networkUrl(Uri.parse(exercise['videoUrl']))
+    ..initialize().then((_) {
+      setState(() {});
+      _controller.play(); // Auto-play the exercise demonstration
+      _controller.setLooping(true); // Loop it so the user can keep watching
+    });
+}
+```
+
